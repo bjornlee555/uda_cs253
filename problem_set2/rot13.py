@@ -19,8 +19,6 @@ form = """
 			<textarea name="text" 
 					style="height: 100px; width: 400px;" >%(text)s</textarea>
 
-			<div style="color: red">%(error)s</div>
-
 			<br>
 			<input type="submit">
 
@@ -36,16 +34,23 @@ def escape_html(s):
 
 def rot13(a_string):
 	b_string = ''
-	j=''
+	j = ''
 	for i in a_string:
-		j = chr(97 + (ord(i)+13)%97)
-		b_string += j
+		if i.isalpha():
+			j = ord(i)
+			if j >= 65 and j <= 90:
+				j = (j % 65 + 13) % 26 + 65
+				i = chr(j)
+			elif j >= 97 and j <= 122:
+				j = (j % 97 + 13) % 26 + 97
+				i = chr(j)
+		b_string += i
+
 	return b_string
 
 class MainPage(webapp2.RequestHandler):
-    def write_form(self, error="", text=""):
-    	self.response.out.write(form % {"error": error, 
-    									"text": escape_html(text)})
+    def write_form(self, text=""):
+    	self.response.out.write(form % {"text": escape_html(text)})
 
     def get(self):
         
@@ -54,7 +59,7 @@ class MainPage(webapp2.RequestHandler):
 
     def post(self):
     	input_text = self.request.get('text')
-    	self.write_form(rot13(input_text), rot13(input_text))
+    	self.write_form(rot13(input_text))
     	
     	#self.response.out.write(input_text)
 
