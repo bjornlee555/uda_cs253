@@ -1,4 +1,5 @@
 import webapp2
+import cgi
 
 
 form = """
@@ -16,7 +17,9 @@ form = """
 		<form method="post">
 
 			<textarea name="text" 
-					style="height: 100px; width: 400px;"></textarea>
+					style="height: 100px; width: 400px;" >%(text)s</textarea>
+
+			<div style="color: red">%(error)s</div>
 
 			<br>
 			<input type="submit">
@@ -28,13 +31,32 @@ form = """
 
 """
 
+def escape_html(s):
+	return cgi.escape(s, quote = True)
+
+def rot13(a_string):
+	b_string = ''
+	j=''
+	for i in a_string:
+		j = chr(97 + (ord(i)+13)%97)
+		b_string += j
+	return b_string
 
 class MainPage(webapp2.RequestHandler):
+    def write_form(self, error="", text=""):
+    	self.response.out.write(form % {"error": error, 
+    									"text": escape_html(text)})
+
     def get(self):
         
-        self.response.write(form)
+        self.write_form()
+        #self.response.write(form)
 
-
+    def post(self):
+    	input_text = self.request.get('text')
+    	self.write_form(rot13(input_text), rot13(input_text))
+    	
+    	#self.response.out.write(input_text)
 
 
 
