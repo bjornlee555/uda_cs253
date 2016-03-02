@@ -1,32 +1,42 @@
 import webapp2
 
 
-
 form = """
-&lt;!DOCTYPE html&gt;
 
-&lt;html&gt;
-  	&lt;head&gt;
-    	&lt;title&gt;Unit 2 Rot 13&lt;/title&gt;
-  	&lt;/head&gt;
+<!DOCTYPE html>
 
-  	&lt;body&gt;
-    	&lt;h2&gt;Enter some text to ROT13:&lt;/h2&gt;
-    	&lt;form method=&quot;post&quot;&gt;
-      	&lt;textarea name=&quot;text&quot;
-                	style=&quot;height: 100px; width: 400px;&quot;&gt;&lt;/textarea&gt;
-      	&lt;br&gt;
-      	&lt;input type=&quot;submit&quot;&gt;
-    	&lt;/form&gt;
-  	&lt;/body&gt;
+<html>
+	<head>
+		<title>Unit 2 Rot13</title>
+	</head>
 
-&lt;/html&gt;
+	<body>
+		<h2>Enter some text to ROT13</h2>
+
+		<form method="post">
+
+			<textarea name="text" 
+					style="height: 100px; width: 400px;"></textarea>
+
+			<br>
+			<input type="submit">
+
+		</form>
+	</body>
+
+</html>
+
 """
+
 
 class MainPage(webapp2.RequestHandler):
     def get(self):
-        self.response.headers['Content-Type'] = 'text/plain'
-        self.response.write('I am Rot13!')
+        
+        self.response.write(form)
+
+
+
+
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
