@@ -23,11 +23,11 @@ form = """
 						Username
 					</td>
 					<td>
-						<input type="text" name="username" value="%(username)s" required>
+						<input type="text" name="username" value="%(username)s">
 					</td>
 					
 					<td class="error">
-						<div >%(error_1)s</div>
+						<div >%(error_a)s</div>
 					</td>
 				</tr>
 				<tr>
@@ -35,10 +35,10 @@ form = """
 						Password
 					</td>
 					<td>
-						<input type="text" name="password" value="%(password)s" required>
+						<input type="password" name="password" value="%(password)s">
 					</td>
 					<td class="error">
-						<div >%(error_2)s</div>
+						<div >%(error_b)s</div>
 					</td>
 				</tr>
 				<tr>
@@ -46,10 +46,10 @@ form = """
 						Verify Password
 					</td>
 					<td>
-						<input type="text" name="verify" value="%(verify)s" required>
+						<input type="password" name="verify" value="%(verify)s">
 					</td>
 					<td class="error">
-						<div >%(error_3)s</div>
+						<div >%(error_c)s</div>
 					</td>
 				</tr>
 
@@ -61,7 +61,7 @@ form = """
 						<input type="text" name="email" value="%(email)s">
 					</td>
 					<td class="error">
-						<div >%(error_4)s</div>
+						<div >%(error_d)s</div>
 					</td>
 				</tr>
 							
@@ -94,16 +94,15 @@ EMAIL_RE = re.compile("^[\S]+@[\S]+\.[\S]+$")
 def valid_email(email):
 	return EMAIL_RE.match(email)
 
+#the_username=""
+
 class MainPage(webapp2.RequestHandler):
 
-	def write_form(self, error_1="", error_2="", error_3="", error_4="", 
-					username="", password="",verify="",email=""):
-		self.response.out.write(form % {"error_1": error_1, "error_2": error_2, 
-										"error_3": error_3, "error_4": error_4, 
-										"username":escape_html(username), 
-										"password":escape_html(password), 
-										"verify":escape_html(verify), 
-										"email":escape_html(email)})
+	def write_form(self,error_a="",error_b="",error_c="",error_d="",username="",password="",verify="",email=""):
+		self.response.out.write(form % {"error_a":error_a,"error_b":error_b,
+										"error_c":error_c,"error_d":error_d,
+										"username":username,"password":password,
+										"verify":verify, "email":email})
 
 	def get(self):
 		self.write_form()
@@ -115,17 +114,53 @@ class MainPage(webapp2.RequestHandler):
 		a_verify = self.request.get('verify')
 		a_email = self.request.get('email')
 
+		#the_username = a_username
+
 		username = valid_username(a_username)
 		password = valid_password(a_password)
-		verify=valid_password(a_verify)
+		verify = valid_password(a_verify)
 		email = valid_email(a_email)
 
-		if username and password and a_password==a_verify:
-			self.redirect("/welcome")
+		outcome = ['','','','',a_username,a_password,a_verify,a_email]
+		count = 0
+
+		if username and password and a_password==a_verify and email:
+			self.redirect("/welcome?username=" + username)
+		elif username and password and a_password==a_verify and a_email=="":
+			self.redirect("/welcome?username=" + a_username)
+		else:
+			for (i,o) in ((username,"That's not a valid username."),
+							(password,"That wasn't a valid password."),
+							(verify,""),
+							(email,"")):
+				
+				if i == None:
+					outcome[count] = o
+				count += 1
+			if a_password != a_verify:
+				outcome[2]="Your passwords didn't match."
+				outcome[1]=""
+				outcome[5]=""
+				outcome[6]=""
+			if a_email !="" and email == None:
+				outcome[3]="That's not a valid email."
+
+			new_outcome = tuple(outcome)
+			#newer_outcome = new_outcome + (a_username,a_password,a_verify,a_email)
+			error_a,error_b,error_c,error_d,username,password,verify,email=new_outcome
+			self.write_form(error_a,error_b,error_c,error_d,username,password,verify,email)
+
+
+
 
 class WelcomeHandler(webapp2.RequestHandler):
 	def get(self):
-		self.response.out.write("Welcome, ")
+		username=self.request.get("username")
+		self.response.out.write("Welcome, " + username + '!')
+
+#class BadHandler(webapp2.RequestHandler):
+	#def get(self):
+		#self.response.out.write("bad input :(((")
 
 
 
