@@ -1,0 +1,26 @@
+<!doctype = html>
+
+<html>
+
+	<head>
+		<title>Welcome to Math Land!</title>
+	</head>	
+
+	<body>
+		<h1>We are multiplying today!</h1>
+		<ol>
+			{% for x in range(1,n+1) %}
+				{% if x % 3 == 0 and x % 5 == 0 %}
+					<li>fizzbuzz</li>
+				{% elif x % 3 == 0 %}
+					<li>fizz</li>
+				{% elif x % 5 == 0 %}
+					<li>buzz</li>	
+				{% else %}
+					<li>{{x*1}}</li>
+				{% endif %}
+			{% endfor %}
+		</ol>
+	</body>
+
+</html>
