@@ -2,28 +2,64 @@ import webapp2
 import cgi
 
 form = """
-<form method = "post">
-	What is your birthday?
-	<br>
+<!DOCTYPE html>
 
-	<label> Month
-		<input type="text" name="month" value="%(month)s">
-	</label>
+<html>
+	<head>
+		<title>User Signup</title>
+		<style type="text/css">
+			.label {text-align: right}
+			.error {color:red}
+		</style>
+	</head>
 
-	<label> Day
-	<input type="text" name="day" value="%(day)s">
-	</label>
+	<body>
+		<form method = "post">
+			What is your birthday?
+			<br>
+			<table>
+				<tr>
+					<td class="label"> 
+						Month
+					</td>
+					<td>
+						<input type="text" name="month" value="%(month)s">
+					</td>
 
-	<label> Year
-	<input type="text" name="year" value="%(year)s">
-	</label>
-	<div style="color: red">%(error)s</div>
+				</tr>
 
-	<br>
-	<br>
-	<input type="submit">
+				<tr>
+					<td class="label">  
+						Day
+					</td>
+					<td>
+						<input type="text" name="day" value="%(day)s">
+					</td>
+					<td class="error">
+						<div>%(error_a)s</div>
+					</td>
+				</tr>
 
-</form>
+				<tr>
+					<td class="label">  
+						Year
+					</td>
+					<td>
+						<input type="text" name="year" value="%(year)s">
+					</td>
+				</tr>
+			</table>
+
+			<div style="color: red">%(error)s</div>
+
+			<br>
+			<br>
+			<input type="submit">
+
+		</form>
+	</body>
+
+</html>
 
 """
 
@@ -53,8 +89,9 @@ def escape_html(s):
 	return cgi.escape(s, quote = True)
 
 class MainPage(webapp2.RequestHandler):
-    def write_form(self, error="", month="", day="", year=""):
+    def write_form(self, error="", error_a="",month="", day="", year=""):
     	self.response.out.write(form % {"error": error,
+    									"error_a": error_a,
     									"month": escape_html(month),
     									"day": escape_html(day),
     									"year": escape_html(year)})
@@ -74,6 +111,7 @@ class MainPage(webapp2.RequestHandler):
 
     	if not (month and day and year):
     		self.write_form("That doesn't look valid to me, friend.",
+    						"that's a good month!",
     						user_month, user_day, user_year)
     		#self.response.out.write(form)
     	else:
