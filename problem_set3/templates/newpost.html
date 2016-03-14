@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+
+<html>
+
+	<head>
+		<title>New Blog Post</title>
+	</head>
+
+	<body>
+		<h2>What do you wanna post today?</h2>
+
+		<form method="post">
+			<label>
+				<div>title</div>
+				<input type="text" name="subject" value="{{title}}">
+			</label>
+
+			<label>
+				<div>art</div>
+				<textarea name="content">{{content}}</textarea>
+			</label>
+
+			<div class="error">{{error}}</div>
+
+			<input type="submit">
+		</form>
+
+		<hr>
+	</body>
+
+</html>

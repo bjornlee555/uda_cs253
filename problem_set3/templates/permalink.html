@@ -1,0 +1,33 @@
+{% extends "blog.html" %}
+
+{%  block content %}
+<!DOCTYPE html>
+
+<html>
+
+	<head>
+		<title>Bjorn's CS253 Blog</title>
+	</head>
+
+	<body>
+		{% set link = "/blog/" + {{id}} %}
+		<div class="post-heading">
+			<a href={{link}} class="post-title">
+				{{subject}}
+			</a>
+
+			<div class="post-date">
+				{{created}}
+			</div>
+		</div>
+		
+		<div class="post-content">
+			{{content}}
+		</div>
+
+
+	</body>
+
+</html>
+
+{% endblock %}
