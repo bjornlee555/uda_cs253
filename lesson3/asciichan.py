@@ -1,7 +1,12 @@
 import os
+import re
+import sys
 import webapp2
 import jinja2
+import urllib2
 
+from xml.dom import minidom
+from string import letters
 from google.appengine.ext import db
 
 template_dir = os.path.join(os.path.dirname(__file__),'templates')
@@ -21,19 +26,66 @@ class Handler(webapp2.RequestHandler):
 	def render(self, template, **kw):
 		self.write(self.render_str(template, **kw))
 
+GMAPS_URL = "https://maps.googleapis.com/maps/api/staticmap?size=600x300&maptype=roadmap&%r&key=AIzaSyD9KgC0eBH4Hre-6TNwUr9QqJcZrTCVyw4"
+
+def gmaps_img(points):
+    append = ''
+    for p in points:
+        append+='markers=%d,%d&'%(p.lat,p.lon)
+    append = append[:-1]
+    return GMAPS_URL % append
+
+IP_URL = "http://ip-api.com/xml/23.24.209.241"
+def get_coords():
+	url = IP_URL
+	content = None
+	try:
+		content =  urllib2.urlopen(url).read()
+	except urllib2.URLError:
+		return
+
+	if content:
+		d = minidom.parseString(content)
+		status = d.getElementsByTagName("status")[0].childNodes[0].nodeValue
+		if status == "success":
+			lonNode = d.getElementsByTagName("lon")[0]
+        	latNode = d.getElementsByTagName("lat")[0]
+        	if lonNode and latNode and lonNode.childNodes[0].nodeValue and latNode.childNodes[0].nodeValue:
+        		lon = lonNode.childNodes[0].nodeValue
+            	lat = latNode.childNodes[0].nodeValue
+            	return db.GeoPt(lat, lon)
+
 class Art(db.Model):
 	title = db.StringProperty(required=True)
 	art=db.TextProperty(required=True)
 	created=db.DateTimeProperty(auto_now_add=True)
+	coords = db.GeoPtProperty()
 
 class MainPage(Handler):
 	def render_front(self,title="", art="", error=""):
-		arts = db.GqlQuery("SELECT * FROM Art "
-							"ORDER BY created DESC")
+		arts = db.GqlQuery("SELECT * FROM Art ORDER BY created DESC ")
+		
+		# prevent the running of ultiple databse queries
+		arts = list(arts)
 
-		self.render("front.html",title=title,art=art,error=error,arts=arts)
+		#find which arts have coords
+		points = []
+		for a in arts:
+			if a.coords:
+				points.append(a.coords)
+		# if we have any arts coords, make an image url
+		img_url = None
+		if points:
+			img_url = gmaps_img(points)
+
+		#display the image url
+
+		self.render("front.html",title=title,art=art,error=error,arts=arts, img_url=img_url)
+
 
 	def get(self):
+		#self.write(self.request.remote_addr)
+		#self.write(repr(get_coords()))
 		self.render_front()
 
 	def post(self):
@@ -42,6 +94,9 @@ class MainPage(Handler):
 
 		if title and art:
 			a = Art(title=title, art=art)
+			coords = get_coords()
+			if coords:
+				a.coords = coords
 			a.put()
 
 			self.redirect("/")
