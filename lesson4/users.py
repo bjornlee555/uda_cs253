@@ -27,6 +27,7 @@ def check_secure_val(h):
 		return None
 
 
+
 class Handler(webapp2.RequestHandler):
 	def write(self, *a, **kw):
 		self.response.out.write(*a, **kw)
@@ -43,7 +44,12 @@ class MainPage(Handler):
 	def get(self):
 		self.response.headers['Content-Type'] = 'text/plain'
 		visits = 0
+		# trying our new variables for adding new headers 'user' & 'password'
+		user=''
 		visit_cookie_str = self.request.cookies.get('visits')
+		a_user = self.request.cookies.get('user')
+		your_name = 'Caesar'
+		your_password = 'aliens'
 
 		if visit_cookie_str:
 			cookie_val = check_secure_val(visit_cookie_str)
@@ -54,11 +60,13 @@ class MainPage(Handler):
 		new_cookie_val = make_secure_val(str(visits))
 
 		self.response.headers.add_header('Set-Cookie', 'visits=%s' %new_cookie_val)
+		self.response.headers.add_header('Set-Cookie', 'user=%s'%your_name)
+		self.response.headers.add_header('Set-Cookie', 'password=%s'%your_password)
 
 		if visits > 100:
 			self.write("You are the best ever!")
 		else:
-			self.write("You've been here %s times" % str(visits))
+			self.write("%s, you've been here %s times" % (str(a_user),str(visits)))
 
 
 app = webapp2.WSGIApplication([('/', MainPage)], debug=True)
