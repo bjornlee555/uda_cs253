@@ -1,0 +1,29 @@
+{% extends "blog.html" %}
+
+{%  block content %}
+<!DOCTYPE html>
+
+<html>
+
+	<head>
+		<title>Bjorn's CS253 Blog</title>
+	</head>
+
+	<body>
+		<div class="post-heading">
+				{{subject}}
+			<div class="post-date">
+				{{created}}
+			</div>
+		</div>
+		
+		<div class="post-content">
+			{{content}}
+		</div>
+
+
+	</body>
+
+</html>
+
+{% endblock %}
