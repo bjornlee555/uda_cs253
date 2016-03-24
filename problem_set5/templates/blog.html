@@ -133,7 +133,16 @@
 	<body>
 		<a href="/blog" class="main-title">Bjorn's CS253 blog</a>
 
-
+		<div class="login-area">
+    
+			{% if not cookie_user_id %}
+		    	<a class="login-link" href="/login">login </a>|
+		      	<a class="login-link" href="/signup">signup</a>
+		    {% else %}
+		    	{{login_username}}
+		    	(<a class="login-link" href="/logout">logout</a>)
+		    {% endif %}
+	  	</div>
 
 		{% for blog in bloghome %}
 		{% set link = blog.href() %}
@@ -144,7 +153,7 @@
 					</a>
 
 					<div class="post-date">
-						{{blog.created}}
+						{{blog.created.strftime("%b %d, %Y")}}
 					</div>
 				</div>
 				<div class="post-content">{{blog.content}}</div>
