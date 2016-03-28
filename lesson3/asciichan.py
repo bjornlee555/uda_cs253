@@ -4,10 +4,13 @@ import sys
 import webapp2
 import jinja2
 import urllib2
+import time
+import logging
 
 from xml.dom import minidom
 from string import letters
 from google.appengine.ext import db
+from google.appengine.api import memcache
 
 template_dir = os.path.join(os.path.dirname(__file__),'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
@@ -61,20 +64,34 @@ class Art(db.Model):
 	created=db.DateTimeProperty(auto_now_add=True)
 	coords = db.GeoPtProperty()
 
+def top_arts(update = False):
+		key = 'top'
+		arts = memcache.get(key)
+		if arts is None or update:
+			logging.error("DB QUERY")
+			arts = db.GqlQuery("SELECT * FROM Art ORDER BY created DESC ")
+
+			arts = list(arts)
+			memcache.set(key,arts)
+		return arts
+
 class MainPage(Handler):
-	def render_front(self,title="", art="", error=""):
-		arts = db.GqlQuery("SELECT * FROM Art ORDER BY created DESC ")
-		
-		# prevent the running of ultiple databse queries
-		arts = list(arts)
+	def render_front(self,title="", art="", error=""):		
+		# prevent the running of multiple databse queries
+		arts = top_arts()
 
 		#find which arts have coords
+		
+		img_url = None
+		# points = filter(None,(a.coords for a in arts))
+
+		#my original way of solving but has linger code
 		points = []
 		for a in arts:
 			if a.coords:
 				points.append(a.coords)
 		# if we have any arts coords, make an image url
-		img_url = None
+		
 		if points:
 			img_url = gmaps_img(points)
 
@@ -98,6 +115,11 @@ class MainPage(Handler):
 			if coords:
 				a.coords = coords
 			a.put()
+			# rerun the query and update the cache
+			#top_arts(True)
+			time.sleep(2)
+			top_arts(True)
+			time.sleep(2)
 
 			self.redirect("/")
 		else:
