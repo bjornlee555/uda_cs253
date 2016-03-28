@@ -136,11 +136,11 @@
 		<div class="login-area">
     
 			{% if not cookie_user_id %}
-		    	<a class="login-link" href="/login">login </a>|
-		      	<a class="login-link" href="/signup">signup</a>
+		    	<a class="login-link" href="/blog/login">login </a>|
+		      	<a class="login-link" href="/blog/signup">signup</a>
 		    {% else %}
 		    	{{login_username}}
-		    	(<a class="login-link" href="/logout">logout</a>)
+		    	(<a class="login-link" href="/blog/logout">logout</a>)
 		    {% endif %}
 	  	</div>
 

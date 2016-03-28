@@ -125,7 +125,7 @@ class SignupHandler(Handler):
 
 			self.response.headers.add_header('Set-Cookie', 'user_id=%s; Path=/' %new_user_id)
 			#self.response.headers.add_header('Set-Cookie', 'c_user=%s; Path=/' %str(a_username))
-			self.redirect("/welcome")
+			self.redirect("/blog/welcome")
 
 		elif username and password and a_password==a_verify and a_email=="":
 			a = Users(username=a_username,password=a_password,email=email)
@@ -136,7 +136,7 @@ class SignupHandler(Handler):
 
 			self.response.headers.add_header('Set-Cookie', 'user_id=%s; Path=/' %new_user_id)
 			#self.response.headers.add_header('Set-Cookie', 'c_user=%s; Path=/' %str(a_username))
-			self.redirect("/welcome")
+			self.redirect("/blog/welcome")
 
 		else:
 			for (i,o) in ((username,"That's not a valid username."),
@@ -185,7 +185,7 @@ class LoginHandler(Handler):
 					l_user = result2.key().id()
 					new_user_id = make_secure_val(str(l_user))
 					self.response.headers.add_header('Set-Cookie', 'user_id=%s; Path=/' %new_user_id)
-					self.redirect('/welcome')
+					self.redirect('/blog/welcome')
 		
 		error = 'Invalid login'
 		self.render_login('','',error)
@@ -193,7 +193,7 @@ class LoginHandler(Handler):
 class LogoutHandler(Handler):
 	def get(self):
 		self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
-		self.redirect('/signup')
+		self.redirect('/blog/signup')
 
 class WelcomeHandler(Handler):
 	def get(self):
@@ -209,6 +209,7 @@ class BlogHandler(Handler):
 		self.render("blog.html",bloghome=bloghome,cookie_user_id=cookie_user_id,login_username=login_username)
 
 	def get(self):
+		
 		cookie_user_id = self.request.cookies.get('user_id')
 		if cookie_user_id:
 			current_user_id = ((self.request.cookies.get("user_id")).split('|'))[0]
@@ -220,9 +221,14 @@ class BlogHandler(Handler):
 
 class NewPostHandler(Handler):
 	def get(self):
-		self.render("newpost.html")
+		cookie_user_id = self.request.cookies.get('user_id')
+		if cookie_user_id:
+			self.render("newpost.html")
+		else:
+			self.redirect('/blog/login')
 
 	def post(self):
+
 		subject=self.request.get("subject")
 		content=self.request.get("content")
 
@@ -230,6 +236,7 @@ class NewPostHandler(Handler):
 			a=Blog(subject=subject, content=content)
 			a.put()
 			a_id=a.key().id()
+
 
 			# this avoid annoying browser reminder to reload the page
 			self.redirect("/blog/%d" %a_id)
@@ -255,31 +262,34 @@ class JsonHandler(Handler):
 			d = {}
 			d['subject'] = i.subject
 			d['content'] = i.content
+			d['created'] = i.created.strftime("%b %d, %Y")
 			l.append(d)
 		j_d = json.dumps(l)
 		self.write(j_d)	
 
 	def get(self):
+		self.response.headers['Content-Type']= "application/json; charset=UTF-8"
 		self.render_front()
 
 class PermaJsonHandler(Handler):
 	def get(self,some_id):
+		self.response.headers['Content-Type']= "application/json; charset=UTF-8"
 		a=Blog.get_by_id(int(some_id))
-		post_json = []
+		#post_json = []
 		entry = {}
 		entry['content'] = a.content
 		entry['subject'] = a.subject
-		post_json.append(entry)
-		some_json = json.dumps(post_json)
-		self.write(json.dumps(some_json))
-		
+		entry['created'] = a.created.strftime("%b %d, %Y")
+		#post_json.append(entry)
+		some_json = json.dumps(entry)
 		self.write(some_json)
 
+
 app = webapp2.WSGIApplication([('/',MainPage),
-								('/signup', SignupHandler),
-								('/login', LoginHandler),
-								('/logout', LogoutHandler), 
-								('/welcome', WelcomeHandler),
+								('/blog/signup', SignupHandler),
+								('/blog/login', LoginHandler),
+								('/blog/logout', LogoutHandler), 
+								('/blog/welcome', WelcomeHandler),
 								(r'/blog', BlogHandler),
 								(r'/blog/.json', JsonHandler),
 								(r'/blog/newpost',NewPostHandler),
